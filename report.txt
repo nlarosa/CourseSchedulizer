@@ -1,0 +1,105 @@
+Nicholas LaRosa
+CSE 20212, Lab 10
+
+Time Log:
+
+4/9/13 	-- 3:30pm-5:30pm 	-- Researching methods for retrieving corequisites and prerequisites for courses, began planning to use "curl" shell command
+4/13/13	-- 1:00pm-4:00pm	-- Created parseHTML function in Course class, successfully got it to generate .html file (with HTML source)
+4/16/13 -- 10:50am-12:20pm	-- Informally discussed with Phillip the necessary interaction between classes, discussed implementing Map or Multi-Map
+4/17/13 -- 9:30pm-10:00pm 	-- Informally discussed class hierarchy with Sidd and Eric
+
+Total Time: 7.00 hours
+
+BitBucket Repository: https://nlarosa@bitbucket.org/pshiu/dart2.0.git
+
+	The main component of the project that I worked on this week was the
+HTML parser, a function within the Course class. This function works by taking
+in a term number correlating to a Section. If the Course instance contains a
+Section taking place in the given term number, the HTML parsing function
+generates an HTML address for this Section and externally generates the HTML
+source code. From here, prerequisites, corequisites, and attributes can be
+parsed from the file containing the HTML source code.
+
+	The first step in getting this parsing function to work involved
+generating a term number for a Section class. Term numbers, as established by
+the Registrar, are of the form XXXXYY, where XXXX is the Section year and YY
+corresponds to the Section semester. This term number generation is pivotal
+for the HTML parsing because the HTML address to course pages contains this
+integer value. Additionally, this number can easily be compared to that of
+other Sections, allowing for easy comparison in other functions. For a course
+taking place in the Fall 2013, the term number is 201310, for a course taking
+place in Summer 2013, the term number is 201300, and for a course taking place
+in Spring 2013, the term number is 201220. In some ways this system makes
+sense because an academic year begins in the summer and ends in the Spring.
+But either way, this is the method of the Registrar, so we have no say.
+
+	Generating the term number of a Section through a function in its
+corresponding Date class, the parseHTML function in the Course class can find
+a Section in its vector of Sections that takes place during a specific term
+number. Thus, this functionality will allow the program to re-parse the HTML
+information for each Course based on the current term for which the user is
+selecting courses. The parseHTML function, therefore, only parses an HTML
+address if the Course instance contains a Section instance taking place during
+the given term. Searching through the Course's vector of Sections, the
+function finds or does not find a Section taking place during that semester.
+
+	If the function does find a correct Section, the parsing will take
+place. If not, the function ends with an error message. With a correct Section
+found, the function then accesses the Section's CRN and subsequently
+constructs an HTML address to this Section's course page. Suprisingly, these
+HTML pages are not password-protected, a fact that is actually very helpful to
+our program. After the HTML address is constructed as a string with help from
+macros (to specify the non-unique parts of each address), a shell script is
+generated also as a string. We decided to use the "curl" shell script to
+retrieve the HTML source from the internet, eventually contructing the command
+"curl '<html_address>' > .html'. Using the system() call in C++, we are able
+to call this string as a shell command, effectively placing the HTML source
+into a hidden file ".html". From here, the function goes on to parse
+attributes, corequisites, and prerequisites.
+
+	Currently, the parseHTML function correctly places HTML page source
+into the hidden file .html. This was tested via the small driver program
+main.cpp, which creates a Section class within a Course class and then calls
+the parseHTML function. Given the term number of the Section as an argument,
+the function runs without error. Checking the .html file, it does in fact
+contain the correct HTML source code. 
+
+	The function does not yet work fully, as it doesn't yet parse the HTML
+source for attributes, corequisites, and prerequisites. There is a chunk of
+code commented out (to make the program compile) that is meant to add this
+functionality, but unfortunately I did not have time to successfully debug the
+code. Generally, the parsing functions get each line of the .html file and
+using the C++ find function, check for the current segment of the source. For
+example, if a line contains the word "Attributes", we know we are in the
+Attributes segment of the HTML source and thus should begin looking for
+correctly formatted attribute codes. Additionally, to decrease running time,
+all lines within the HTML <script></script> tags are ignored (because the
+source contains long script code at its beginning). This methodology will
+hopefully allow us to parse the required information in a short amount of
+time. Otherwise, there is obviously always room for improvement.
+
+	Overall, I see the HTML parser as one of my better contributions to
+this project. Not only will it allow us to make our class search much more
+practical and useful for the average student, but I am proud that I was able
+to grab this information off the internet in the first place. Although the
+Registrar does have corequisite and prerequisite information in external
+files, these files are not easily accessible to a user using our program for
+the first time. Thus, all the user needs is a CSV file, and CSV formatted
+course information is available through the offical ND class search. This
+greatly increases the flexibility of our program and actually make the program
+somewhat easy to use.
+	
+	Additionally, I was proud of my use of prime numbers to represent the
+weekly schedule of a Section in integer form. Implemented in the Date class,
+this function worked by multiplying an integer by a unique prime for each of
+the five days of the week. If a Section takes place during a specific day, an
+integer variable was multiplied by the unique prime corresponding to that
+weekday. Thus, this allows for each conflict-checking because we know that a
+Section takes place on a specific day if its integer variable is divisible by
+the unique prime corresponding to that respective day. Instead of needing to
+compare strings and characters, this functionality requires only a few
+arithmetic operations. Also, this features allows us to easily compare the
+schedules of two classes, even if they take place during strange day
+combinations (not every course takes place MWF or TR). Our final project will
+make use of this functionality through its course conflict checking.
+
